@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Корзина | Invisible Loft</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <nav class="bg-white shadow-sm p-4 mb-10">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-black tracking-tighter">INVISIBLE <span class="text-blue-600">LOFT</span></a>
+            <a href="index.html" class="text-gray-600 hover:text-black transition">← Назад в каталог</a>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto p-4">
+        <h1 class="text-4xl font-black mb-8 text-slate-800">Ваша корзина</h1>
+
+        <div id="cart-container" class="space-y-4 mb-10">
+            </div>
+
+        <div id="checkout-section" class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-2xl font-bold text-gray-500">Итого к оплате:</span>
+                <span id="total-price" class="text-4xl font-black text-blue-600">0 ₽</span>
+            </div>
+
+            <textarea id="order-comment" placeholder="Ваш комментарий к заказу (например, адрес доставки или время)..." 
+                class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl mb-6 focus:ring-2 focus:ring-blue-500 outline-none h-32 transition"></textarea>
+
+            <button id="checkout-btn" onclick="sendOrder()" 
+                class="w-full py-5 bg-slate-900 text-white rounded-2xl font-bold text-xl hover:bg-blue-600 transition-all duration-300 shadow-lg active:scale-[0.98]">
+                Оформить заказ
+            </button>
+        </div>
+
+        <div id="empty-msg" class="text-center py-20 hidden">
+            <div class="text-6xl mb-4">🛒</div>
+            <h2 class="text-2xl font-bold text-gray-400">В корзине пока ничего нет</h2>
+            <a href="index.html" class="mt-6 inline-block text-blue-600 font-bold underline">Перейти к покупкам</a>
+        </div>
+    </main>
+
+    <script>
+        const API = "http://localhost:5000/api";
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function renderCart() {
+            const container = document.getElementById('cart-container');
+            const section = document.getElementById('checkout-section');
+            const emptyMsg = document.getElementById('empty-msg');
+            const totalDisplay = document.getElementById('total-price');
+
+            if (cart.length === 0) {
+                container.innerHTML = '';
+                section.classList.add('hidden');
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+
+            section.classList.remove('hidden');
+            emptyMsg.classList.add('hidden');
+
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                total += Number(item.price);
+                return `
+                    <div class="flex items-center gap-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <img src="${item.image || 'https://via.placeholder.com/150'}" class="w-24 h-24 object-cover rounded-xl shadow-inner">
+                        <div class="flex-grow">
+                            <h3 class="text-xl font-bold text-slate-800">${item.name}</h3>
+                            <p class="text-gray-400 text-sm">Артикул: ${item.id}</p>
+                            <div class="text-2xl font-black mt-2">${item.price} ₽</div>
+                        </div>
+                        <button onclick="removeItem(${index})" class="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            totalDisplay.innerText = total + " ₽";
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        async function sendOrder() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Пожалуйста, войдите в аккаунт, чтобы оформить заказ.");
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            const btn = document.getElementById('checkout-btn');
+            const comment = document.getElementById('order-comment').value;
+            const total = cart.reduce((sum, i) => sum + Number(i.price), 0);
+
+            // 1. Блокируем кнопку (защита от двойного клика)
+            btn.disabled = true;
+            btn.innerText = "Связываемся с сервером...";
+
+            // 2. Формируем данные (items — это строка JSON!)
+            const orderData = {
+                comment: comment,
+                items: JSON.stringify(cart), // Массив превращаем в строку
+                totalPrice: total
+            };
+
+            try {
+                const res = await fetch(`${API}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("Заказ принят! Спасибо за покупку.");
+                    localStorage.removeItem('cart'); // Очищаем корзину после успеха
+                    window.location.href = 'index.html';
+                } else {
+                    // Если сервер вернул ошибку (например, 400 или 500)
+                    alert("Ошибка: " + (data.error || "Не удалось создать заказ"));
+                }
+            } catch (err) {
+                alert("Ошибка сети. Проверьте, запущен ли сервер.");
+            } finally {
+                // 3. Разблокируем кнопку, если что-то пошло не так
+                btn.disabled = false;
+                btn.innerText = "Оформить заказ";
+            }
+        }
+
+        // Запуск при загрузке
+        renderCart();
+    </script>
+</body>
+</html>

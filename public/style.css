@@ -1,0 +1,138 @@
+:root {
+    --primary: #2563eb;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --accent: #6366f1;
+}
+/* Хлебные крошки и навигация */
+
+.breadcrumbs {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+.breadcrumbs a {
+    text-decoration: none;
+    color: #2563eb;
+}
+.breadcrumbs a:hover { text-decoration: underline; }
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #e2e8f0;
+    border-radius: 8px;
+    color: #1e293b;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: 0.3s;
+}
+.back-btn:hover { background: #cbd5e1; }
+
+/* Кнопки авторизации в шапке */
+.auth-btns { display: flex; gap: 10px; align-items: center; }
+.btn-outline {
+    border: 1px solid #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.btn-exit { color: #ef4444; border-color: #fecaca; }
+body { font-family: 'Inter', sans-serif; background: var(--light); margin: 0; color: var(--dark); }
+header { 
+    background: white; 
+    padding: 1rem 5%; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    
+    /* ИСПРАВЛЕННЫЙ БЛОК */
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+}nav a { margin: 0 15px; text-decoration: none; color: var(--dark); font-weight: 500; transition: 0.3s; }
+nav a:hover { color: var(--primary); }
+
+.btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; text-decoration: none; display: inline-block; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { background: #ef4444; color: white; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; }
+.card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #e2e8f0; }
+.card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+.card img { width: 100%; height: 250px; object-fit: cover; }
+.card-body { padding: 20px; }
+
+.hidden { display: none !important; }
+.admin-table {
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden; /* Чтобы скругления работали */
+}
+.admin-table th, .admin-table td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light);
+    margin: 0;
+}
+
+.header {
+    background: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.door-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.door-card:hover { transform: translateY(-5px); }
+
+.door-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    background: #e2e8f0;
+}
+
+.door-info { padding: 1.5rem; }
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.admin-form {
+    max-width: 500px;
+    margin: 2rem auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+.input-group { margin-bottom: 1rem; }
+input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
