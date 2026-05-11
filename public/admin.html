@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора - Invisible & Loft</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --light: #ecf0f1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f6;
+            color: var(--primary);
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        h2 { border-bottom: 2px solid var(--light); padding-bottom: 0.5rem; margin-top: 0; }
+        
+        /* Форма */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.9rem; }
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-add { background: var(--success); color: white; width: 100%; font-size: 1rem; }
+        .btn-add:hover { background: #219150; }
+        .btn-logout { background: var(--danger); color: white; }
+
+        /* Таблица */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        th { background-color: var(--light); color: var(--primary); }
+        .btn-delete { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; }
+        .btn-delete:hover { opacity: 0.8; }
+        
+        .loading { text-align: center; padding: 2rem; font-style: italic; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Панель администратора</h1>
+    <div>
+        <span id="admin-info" style="margin-right: 15px;"></span>
+        <button class="btn-logout" onclick="logout()">Выйти</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>Добавить новую дверь в каталог</h2>
+        <form id="add-door-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Название модели</label>
+                    <input type="text" id="name" required placeholder="Напр: Loft Crystal">
+                </div>
+                <div class="form-group">
+                    <label>Материал</label>
+                    <input type="text" id="material" required placeholder="Напр: Дуб">
+                </div>
+                <div class="form-group">
+                    <label>Тип двери</label>
+                    <input type="text" id="doorType" required placeholder="Напр: Раздвижная">
+                </div>
+                <div class="form-group">
+                    <label>Цена (₽)</label>
+                    <input type="number" id="price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>ID Магазина (Store)</label>
+                    <input type="number" id="storeId" required>
+                </div>
+                <div class="form-group">
+                    <label>ID Склада (Storage)</label>
+                    <input type="number" id="storageId" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-add">Добавить в базу данных</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Управление товарами</h2>
+        <div id="loading" class="loading">Загрузка данных из БД...</div>
+        <table id="doors-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Материал</th>
+                    <th>Цена</th>
+                    <th>Магазин</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody id="doors-list">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 1. ПРОВЕРКА АВТОРИЗАЦИИ
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (!token || role !== 'admin') {
+        alert('Доступ запрещен. Только для администраторов.');
+        window.location.href = 'index.html'; // Редирект если не админ
+    } else {
+        document.getElementById('admin-info').innerText = `Админ: ${localStorage.getItem('fio') || 'Управление'}`;
+    }
+
+    // 2. ЗАГРУЗКА ДАННЫХ
+    async function fetchDoors() {
+        try {
+            const response = await fetch('http://localhost:5000/api/doors');
+            const doors = await response.json();
+            
+            const list = document.getElementById('doors-list');
+            list.innerHTML = '';
+            
+            doors.forEach(door => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${door.id}</td>
+                    <td><b>${door.name}</b></td>
+                    <td>${door.material}</td>
+                    <td>${new Intl.NumberFormat('ru-RU').format(door.price)} ₽</td>
+                    <td>${door.Store ? door.Store.name : 'ID: ' + door.storeId}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteDoor(${door.id})">Удалить</button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('doors-table').style.display = 'table';
+        } catch (err) {
+            console.error('Ошибка загрузки:', err);
+            document.getElementById('loading').innerText = 'Ошибка связи с сервером.';
+        }
+    }
+
+    // 3. ДОБАВЛЕНИЕ (POST)
+    document.getElementById('add-door-form').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const doorData = {
+            name: document.getElementById('name').value,
+            material: document.getElementById('material').value,
+            doorType: document.getElementById('doorType').value,
+            price: parseFloat(document.getElementById('price').value),
+            storeId: parseInt(document.getElementById('storeId').value),
+            storageId: parseInt(document.getElementById('storageId').value)
+        };
+
+        const res = await fetch('/api/doors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // ПЕРЕДАЕМ JWT ТОКЕН
+            },
+            body: JSON.stringify(doorData)
+        });
+
+        if (res.ok) {
+            alert('Запись успешно добавлена!');
+            document.getElementById('add-door-form').reset();
+            fetchDoors();
+        } else {
+            const error = await res.json();
+            alert('Ошибка доступа: ' + (error.message || 'Проверьте токен или права доступа'));
+        }
+    };
+
+    // 4. УДАЛЕНИЕ (DELETE)
+    async function deleteDoor(id) {
+        if (!confirm('Вы действительно хотите удалить эту дверь?')) return;
+
+        const res = await fetch(`/api/doors/${id}`, {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': `Bearer ${token}` // ПЕРЕДАЕМ JWT ТОКЕН
+            }
+        });
+
+        if (res.ok) {
+            fetchDoors();
+        } else {
+            alert('У вас нет прав на удаление или сессия истекла.');
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    // Запуск при загрузке
+    fetchDoors();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Invisible Store</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .card { border: 1px solid #ccc; padding: 10px; margin: 10px; display: inline-block; width: 200px; }
+        .auth-form { background: #eee; padding: 15px; margin-bottom: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="auth-ui" class="auth-form">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Пароль">
+        <input type="text" id="code" placeholder="Код админа (123)">
+        <button onclick="doAuth('login')">Войти</button>
+        <button onclick="doAuth('register')">Регистрация</button>
+    </div>
+
+    <div id="user-ui" class="hidden">
+        <h2 id="hello"></h2>
+        <button onclick="localStorage.clear(); location.reload()">Выйти</button>
+        <a href="admin.html" id="adm-btn" class="hidden">Админка</a>
+    </div>
+
+    <div id="catalog"></div>
+
+    <script>
+    // 1. ПЕРЕМЕННЫЕ СОСТОЯНИЯ
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const fio = localStorage.getItem('fio');
+
+    // 2. ФУНКЦИЯ ЗАГРУЗКИ КАТАЛОГА
+    async function loadDoors() {
+        try {
+            // Используем относительный путь, чтобы порт подхватился автоматически
+            const response = await fetch('http://localhost:5000/api/doors'); 
+            const doors = await response.json();
+            
+            const container = document.getElementById('catalog');
+            if (!container) return;
+            
+            container.innerHTML = ''; 
+
+            if (doors.length === 0) {
+                container.innerHTML = '<p>Каталог пуст. Зайдите в админку, чтобы добавить двери.</p>';
+                return;
+            }
+
+            doors.forEach(door => {
+                container.innerHTML += `
+                    <div class="card">
+                        <h3>${door.name}</h3>
+                        <p>Материал: ${door.material}</p>
+                        <p class="price">Цена: ${door.price} ₽</p>
+                        <p><small>Магазин: ${door.Store ? door.Store.name : 'Не указан'}</small></p>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error("Ошибка при загрузке дверей:", e);
+        }
+    }
+
+    // 3. ФУНКЦИЯ АВТОРИЗАЦИИ (ЛОГИН И РЕГИСТРАЦИЯ)
+    async function doAuth(type) {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pass').value;
+        const adminCode = document.getElementById('code')?.value; // Код для админа
+        const regFio = document.getElementById('reg-fio')?.value || "Пользователь";
+
+        const url = type === 'login' ? '/api/auth/login' : '/api/auth/register';
+        const body = type === 'login' 
+            ? { email, password } 
+            : { email, password, FIO: regFio, adminCode };
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+
+            if (data.token) {
+                // Если логин успешен — сохраняем данные
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('fio', data.fio);
+                alert('Успешный вход!');
+                location.reload(); 
+            } else if (type === 'register') {
+                alert('Регистрация успешна! Теперь войдите.');
+            } else {
+                alert(data.error || 'Ошибка доступа');
+            }
+        } catch (e) {
+            alert('Ошибка связи с сервером');
+        }
+    }
+
+    // 4. ЛОГИКА ОТОБРАЖЕНИЯ ИНТЕРФЕЙСА
+    function updateUI() {
+        const authSection = document.getElementById('auth-ui');
+        const userSection = document.getElementById('user-ui');
+        const adminBtn = document.getElementById('adm-btn');
+        const welcome = document.getElementById('hello');
+
+        if (token) {
+            // Пользователь вошел
+            if(authSection) authSection.classList.add('hidden');
+            if(userSection) userSection.classList.remove('hidden');
+            if(welcome) welcome.innerText = `Привет, ${fio}!`;
+            
+            // Если админ — показываем кнопку админки
+            if (role === 'admin' && adminBtn) {
+                adminBtn.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Запуск при загрузке страницы
+    window.onload = () => {
+        updateUI();
+        loadDoors();
+    };
+</script>
+</body>
+</html>
