@@ -2,113 +2,188 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Каталог дверей | Invisible Loft</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог | Invisible Loft</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
 
-    <header>
-        <div class="logo font-bold text-2xl">INVISIBLE <span class="text-blue-600">LOFT</span></div>
-        <nav>
-            <a href="index.html">Главная</a>
-            <a href="catalog.html" class="text-blue-600">Каталог</a>
-            <a href="stores.html">Магазины</a>
-            <a href="about.html">О нас</a>
-            <a href="cart.html" class="relative">
-                <i class="fa-solid fa-cart-shopping"></i> 
-                <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span>
+    <header class="main-header">
+        <div class="logo" onclick="location.href='index.html'">INVISIBLE <span>LOFT</span></div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link">Главная</a>
+            <a href="catalog.html" class="nav-link active">Каталог</a>
+            <a href="stores.html" class="nav-link">Магазины</a>
+            <a href="about.html" class="nav-link">О нас</a>
+            <a href="cart.html" class="nav-link relative">
+                🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span>
             </a>
+            <a href="admin.html" id="adm-link" class="nav-link admin hidden">Админка</a>
+            <a href="login.html" id="login-link" class="nav-link">Вход</a>
+            <a href="#" id="logout-btn" onclick="logout()" class="nav-link logout" style="display:none">Выйти</a>
         </nav>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-black">Все двери</h1>
-            <div class="flex gap-4">
-                <input type="text" id="search" placeholder="Поиск по названию..." class="p-2 border rounded-lg w-64" oninput="filterDoors()">
+    <nav class="breadcrumbs">
+        <a href="index.html">Главная</a>
+        <span>Каталог</span>
+    </nav>
+
+    <div class="catalog-content">
+        <aside class="filters-panel">
+            <h2 class="text-xl font-black mb-6">Фильтры</h2>
+            <div class="filter-section">
+                <label class="filter-label">Поиск по названию</label>
+                <input type="text" id="searchName" oninput="applyFilters()" class="filter-input-text" placeholder="Введите название...">
             </div>
-        </div>
+            <div class="filter-section">
+                <label class="filter-label">Тип двери</label>
+                <select id="filterType" onchange="applyFilters()" class="filter-select">
+                    <option value="all">Все типы</option>
+                    <option value="Скрытая">Скрытая</option>
+                    <option value="Классика">Классика</option>
+                    <option value="Loft">Loft</option>
+                </select>
+            </div>
+            <div class="filter-section">
+                <label class="filter-label">Материал</label>
+                <select id="filterMaterial" onchange="applyFilters()" class="filter-select">
+                    <option value="all">Любой материал</option>
+                    <option value="МДФ">МДФ</option>
+                    <option value="Эмаль">Эмаль</option>
+                    <option value="Шпон">Шпон</option>
+                    <option value="Массив">Массив</option>
+                </select>
+            </div>
+            <div class="filter-section">
+                <label class="filter-label">Максимальная цена</label>
+                <input type="number" id="filterPrice" oninput="applyFilters()" class="filter-input-text" placeholder="Цена до...">
+            </div>
+            <button class="btn-reset w-full mt-4 py-2 border border-dashed border-gray-300 rounded-xl text-gray-400 hover:text-blue-600 transition" onclick="resetFilters()">
+                Сбросить фильтры
+            </button>
+        </aside>
 
-        <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <p class="text-gray-500">Загрузка товаров...</p>
-        </div>
-    </main>
-    <script src="auth-ui.js"></script>
+        <main id="doors-grid" class="doors-grid"></main>
+    </div>
+
     <script>
-        const API = "http://localhost:5000/api";
-        let allDoors = []; // Храним тут все двери для фильтрации
+        const API_URL = "http://localhost:5000/api";
+        let allDoors = [];
 
-        // 1. Загрузка данных с сервера
+        // Синхронизация кнопок входа/выхода
+        function syncAuthUI() {
+            const role = localStorage.getItem('role');
+            const loginLink = document.getElementById('login-link');
+            const admLink = document.getElementById('adm-link');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (role) {
+                if (loginLink) loginLink.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                if (role === 'ADMIN' && admLink) {
+                    admLink.classList.remove('hidden');
+                    admLink.style.display = 'block';
+                }
+            } else {
+                if (loginLink) loginLink.style.display = 'block';
+                if (admLink) admLink.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+            }
+        }
+
         async function loadDoors() {
             try {
-                const res = await fetch(`${API}/doors`);
+                const res = await fetch(`${API_URL}/doors`);
                 allDoors = await res.json();
                 renderDoors(allDoors);
-            } catch (e) {
-                document.getElementById('catalog-grid').innerHTML = "Ошибка связи с сервером";
+            } catch (err) {
+                console.error("Ошибка загрузки:", err);
             }
         }
 
-        // 2. Отрисовка карточек
         function renderDoors(doors) {
-            const grid = document.getElementById('catalog-grid');
+            const container = document.getElementById('doors-grid');
+            container.innerHTML = '';
             if (doors.length === 0) {
-                grid.innerHTML = "<p>Ничего не найдено</p>";
+                container.innerHTML = '<p class="col-span-full text-center text-gray-400 py-20">Ничего не найдено</p>';
                 return;
             }
-
-            grid.innerHTML = doors.map(door => `
-                <div class="card bg-white rounded-xl shadow-sm border p-4 flex flex-col justify-between">
-                    <div>
-                        <img src="${door.material || 'https://via.placeholder.com/300x400'}" class="w-full h-64 object-cover rounded-lg mb-4">
-                        <h3 class="font-bold text-lg leading-tight mb-1">${door.name}</h3>
-                        <p class="text-gray-400 text-sm mb-3">Материал: МДФ / Скрытый короб</p>
+            doors.forEach(door => {
+                const card = document.createElement('div');
+                card.className = 'door-card';
+                card.innerHTML = `
+                    <div class="door-img-wrapper"><img src="${door.image}" alt="${door.name}"></div>
+                    <div class="door-details">
+                        <h3 class="door-title">${door.name}</h3>
+                        <p class="door-info-line">${door.doorType} • ${door.material}</p>
+                        <div class="door-price-row">${Number(door.price).toLocaleString()} ₽</div>
+                        <button class="btn-buy" onclick="addToCart(${door.id}, '${door.name}', ${door.price}, '${door.image}')">В корзину</button>
                     </div>
-                    <div>
-                        <div class="text-2xl font-black text-blue-600 mb-4">${door.price} ₽</div>
-                        <button onclick="addToCart(${door.id}, '${door.name}', ${door.price}, '${door.material}')" 
-                                class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition duration-300">
-                            В корзину
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+                container.appendChild(card);
+            });
         }
 
-        // 3. Функция КОРЗИНЫ
-        function addToCart(id, name, price, image) {
-            // Получаем массив из localStorage
-            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            
-            // Добавляем объект товара
-            cart.push({ id, name, price, image });
-            
-            // Сохраняем обратно
-            localStorage.setItem('cart', JSON.stringify(cart));
-            
-            // Обновляем визуальный счетчик
-            updateCartCounter();
-            
-            // Маленькое уведомление
-            alert(`Товар "${name}" добавлен!`);
-        }
+        function applyFilters() {
+            const nameQuery = document.getElementById('searchName').value.toLowerCase();
+            const typeQuery = document.getElementById('filterType').value;
+            const matQuery = document.getElementById('filterMaterial').value;
+            const maxPrice = Number(document.getElementById('filterPrice').value) || Infinity;
 
-        function updateCartCounter() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            document.getElementById('cart-count').innerText = cart.length;
-        }
-
-        function filterDoors() {
-            const query = document.getElementById('search').value.toLowerCase();
-            const filtered = allDoors.filter(d => d.name.toLowerCase().includes(query));
+            const filtered = allDoors.filter(door => {
+                const matchesName = door.name.toLowerCase().includes(nameQuery);
+                const matchesType = typeQuery === 'all' || door.doorType === typeQuery;
+                const matchesMat = matQuery === 'all' || door.material === matQuery;
+                const matchesPrice = Number(door.price) <= maxPrice;
+                return matchesName && matchesType && matchesMat && matchesPrice;
+            });
             renderDoors(filtered);
         }
 
-        // Запуск при старте
-        loadDoors();
-        updateCartCounter();
+        function resetFilters() {
+            document.getElementById('searchName').value = '';
+            document.getElementById('filterType').value = 'all';
+            document.getElementById('filterMaterial').value = 'all';
+            document.getElementById('filterPrice').value = '';
+            renderDoors(allDoors);
+        }
+
+        // ОБНОВЛЕННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ (С проверкой авторизации)
+        function addToCart(id, name, price, image) {
+            const role = localStorage.getItem('role');
+            
+            if (!role) {
+                alert("Чтобы добавить товар в корзину, необходимо войти в аккаунт");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart.push({ id, name, price, image });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`"${name}" добавлена в корзину`);
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const countEl = document.getElementById('cart-count');
+            if (countEl) countEl.innerText = cart.length;
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncAuthUI();
+            updateCartCount();
+            loadDoors();
+        });
     </script>
 </body>
 </html>

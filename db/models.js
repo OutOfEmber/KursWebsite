@@ -23,7 +23,8 @@ const Door = sequelize.define('door', {
 
 const Store = sequelize.define('store', {
     name: { type: DataTypes.STRING, allowNull: false },
-    address: { type: DataTypes.STRING, allowNull: true } // Разрешаем пустоту для старых записей
+    address: { type: DataTypes.STRING, defaultValue: "Адрес не указан" },
+    image: { type: DataTypes.STRING } // Добавляем картинку
 });
 
 const Storage = sequelize.define('storage', {

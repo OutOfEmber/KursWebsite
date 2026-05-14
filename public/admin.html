@@ -2,189 +2,234 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Админ Центр | Invisible Loft</title>
+    <title>Админ-панель | Invisible Loft</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .admin-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .admin-table th { background: #f8fafc; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: bold; color: #64748b; border-bottom: 2px solid #edf2f7; }
-        .admin-table td { padding: 10px 16px; border-bottom: 1px solid #edf2f7; font-size: 13px; color: #334155; }
-        .admin-table tr:hover { background-color: #f1f5f9; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; font-size: 14px; }
-        input:focus { border-color: #3b82f6; }
-    </style>
 </head>
-<body class="bg-gray-100 flex">
-
-    <aside class="w-64 bg-slate-900 text-white min-h-screen p-6 flex flex-col fixed left-0 top-0 h-full">
-        <h2 class="font-bold text-xl mb-10 text-blue-400 tracking-widest text-center">ADMIN</h2>
-        <div class="space-y-2 flex-grow">
-            <button onclick="view('users')" class="block w-full text-left p-3 hover:bg-slate-800 rounded-xl transition">👤 Пользователи</button>
-            <button onclick="view('doors')" class="block w-full text-left p-3 hover:bg-slate-800 rounded-xl transition">🚪 Двери</button>
-            <button onclick="view('stores')" class="block w-full text-left p-3 hover:bg-slate-800 rounded-xl transition">🏪 Магазины</button>
-            <button onclick="view('storages')" class="block w-full text-left p-3 hover:bg-slate-800 rounded-xl transition">📦 Склады</button>
-            <button onclick="view('orders')" class="block w-full text-left p-3 hover:bg-slate-800 rounded-xl transition">📄 Заказы</button>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex">
+        <div class="w-64 bg-white h-screen shadow-lg p-6 fixed">
+            <div class="font-bold text-xl mb-10 text-blue-600 uppercase tracking-widest">Admin Panel</div>
+            <nav class="space-y-2">
+                <button onclick="loadData('doors')" class="nav-btn w-full text-left p-3 hover:bg-blue-50 rounded-xl transition flex items-center gap-3"><span>🚪</span> Двери</button>
+                <button onclick="loadData('stores')" class="nav-btn w-full text-left p-3 hover:bg-blue-50 rounded-xl transition flex items-center gap-3"><span>🏪</span> Магазины</button>
+                <button onclick="loadData('storages')" class="nav-btn w-full text-left p-3 hover:bg-blue-50 rounded-xl transition flex items-center gap-3"><span>📦</span> Склады</button>
+                <button onclick="loadData('orders')" class="nav-btn w-full text-left p-3 hover:bg-blue-50 rounded-xl transition flex items-center gap-3"><span>📜</span> Заказы</button>
+                <a href="index.html" class="block w-full text-left p-3 text-red-500 mt-10 font-bold">← На сайт</a>
+            </nav>
         </div>
-        <div class="mt-auto pt-6 border-t border-slate-700 text-center">
-            <a href="index.html" class="inline-block p-2 text-xs text-gray-400 hover:text-white transition">← Вернуться на сайт</a>
-        </div>
-    </aside>
 
-    <main class="flex-grow p-10 ml-64">
-        <div class="flex justify-between items-center mb-8">
-            <h1 id="view-title" class="text-3xl font-black text-slate-800">Выберите раздел</h1>
-            <button id="add-btn" onclick="openCreateModal()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold transition shadow-lg">
-                + Добавить запись
-            </button>
-        </div>
-        <div id="content" class="overflow-x-auto"></div>
-    </main>
+        <div class="ml-64 p-10 w-full">
+            <div class="flex justify-between items-center mb-8">
+                <h1 id="table-title" class="text-3xl font-black text-slate-900">Выберите раздел</h1>
+                <button id="add-btn" onclick="openModal()" class="hidden bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition transform active:scale-95">+ Добавить запись</button>
+            </div>
 
-    <div id="modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-            <h3 id="modal-title" class="text-xl font-bold mb-6">Создать запись</h3>
-            <form id="modal-form" class="space-y-4">
-                <div id="modal-fields" class="space-y-4"></div>
-                <div class="flex gap-3 mt-8">
-                    <button type="button" onclick="closeModal()" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Отмена</button>
-                    <button id="modal-submit-btn" type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Сохранить</button>
+            <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead id="table-head" class="bg-gray-50 text-gray-400 text-xs uppercase font-bold"></thead>
+                    <tbody id="table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm z-50 p-4">
+        <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-lg shadow-2xl">
+            <h2 id="modal-title" class="text-2xl font-black mb-6">Редактирование</h2>
+            <div id="modal-fields" class="space-y-4">
                 </div>
-            </form>
+            <div class="flex gap-4 mt-8">
+                <button onclick="save()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition">Сохранить</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-500 py-4 rounded-2xl font-bold">Отмена</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const API = "http://localhost:5000/api";
+        const API = 'http://localhost:5000/api';
         let currentType = '';
-        let editId = null; // Если не null, значит мы редактируем
+        let currentId = null;
 
-        async function view(type) {
+        // 1. Загрузка данных
+        async function loadData(type) {
             currentType = type;
-            document.getElementById('view-title').innerText = "Управление: " + type;
-            document.getElementById('add-btn').classList.toggle('hidden', type === 'orders');
+            document.getElementById('table-title').innerText = `Управление: ${type}`;
             
-            const res = await fetch(`${API}/${type}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            const data = await res.json();
-            renderTable(type, data);
+            // Управляем видимостью кнопки "Добавить"
+            const addBtn = document.getElementById('add-btn');
+            addBtn.classList.remove('hidden');
+            if (type === 'orders') addBtn.classList.add('hidden'); // Заказы создаются только клиентами
+
+            try {
+                const res = await fetch(`${API}/${type}`);
+                const data = await res.json();
+                renderTable(data);
+            } catch (e) {
+                console.error("Ошибка загрузки:", e);
+            }
         }
 
-        function renderTable(type, data) {
-            const container = document.getElementById('content');
-            if (!data || data.length === 0) {
-                container.innerHTML = "<p class='p-8 bg-white rounded-xl border text-center text-gray-500'>Данных нет.</p>";
+        // 2. Отрисовка таблицы с кнопками "Изм." и "Удал."
+        function renderTable(data) {
+            const head = document.getElementById('table-head');
+            const body = document.getElementById('table-body');
+            head.innerHTML = '';
+            body.innerHTML = '';
+
+            if (data.length === 0) {
+                body.innerHTML = '<tr><td class="p-10 text-center text-gray-400">Данных пока нет</td></tr>';
                 return;
             }
 
-            const headers = Object.keys(data[0]).filter(k => !['password', 'updatedAt'].includes(k));
-            let html = `<table class="admin-table"><thead><tr>${headers.map(h => `<th>${h.toUpperCase()}</th>`).join('')}<th class="text-right">ДЕЙСТВИЯ</th></tr></thead><tbody>`;
+            const keys = Object.keys(data[0]).filter(k => !['updatedAt', 'createdAt'].includes(k));
+            
+            // Шапка
+            let headHtml = '<tr>';
+            keys.forEach(key => headHtml += `<th class="p-5">${key}</th>`);
+            headHtml += '<th class="p-5 text-right">Действия</th></tr>';
+            head.innerHTML = headHtml;
 
-            data.forEach(row => {
-                html += `<tr>`;
-                headers.forEach(key => {
-                    let val = row[key];
-                    let display = val;
-                    if (val && typeof val === 'object') display = val.name || 'ID: ' + val.id;
-                    else if (typeof val === 'string' && (val.startsWith('http') || val.includes('/uploads/'))) {
-                        display = `<img src="${val}" class="w-10 h-10 object-cover rounded border">`;
+            // Строки
+            data.forEach(item => {
+                let rowHtml = `<tr class="hover:bg-blue-50/30 transition">`;
+                keys.forEach(key => {
+                    let val = item[key];
+                    if (key === 'image' && val) {
+                        rowHtml += `<td class="p-5"><img src="${val}" class="w-12 h-12 object-cover rounded-lg"></td>`;
+                    } else if (typeof val === 'object' && val !== null) {
+                        rowHtml += `<td class="p-5 text-blue-600 font-medium">${val.name || '—'}</td>`;
+                    } else {
+                        rowHtml += `<td class="p-5 text-gray-600 font-medium">${val || '—'}</td>`;
                     }
-                    html += `<td>${display || '—'}</td>`;
                 });
-                html += `
-                    <td class="text-right whitespace-nowrap">
-                        <button onclick='openEditModal(${JSON.stringify(row)})' class="text-blue-500 hover:underline mr-3">Изм.</button>
-                        <button onclick="del('${type}', ${row.id})" class="text-red-500 hover:underline">Удал.</button>
-                    </td></tr>`;
+
+                // Кнопки Изменить и Удалить (сохранены из вашего прошлого кода)
+                rowHtml += `
+                    <td class="p-5 text-right space-x-3">
+                        <button onclick="openModal('${item.id}')" class="text-blue-500 font-bold hover:underline">Изм.</button>
+                        <button onclick="removeItem('${item.id}')" class="text-red-500 font-bold hover:underline">Удал.</button>
+                    </td>
+                </tr>`;
+                body.innerHTML += rowHtml;
             });
-            container.innerHTML = html + `</tbody></table>`;
         }
 
-        function openCreateModal() {
-            editId = null;
-            document.getElementById('modal-title').innerText = "Новая запись";
-            setupFields();
-            document.getElementById('modal').classList.replace('hidden', 'flex');
-        }
+        // 3. Модальное окно с ВЫБОРКОЙ вместо ручного ввода
+        async function openModal(id = null) {
+            currentId = id;
+            const modal = document.getElementById('modal');
+            const fields = document.getElementById('modal-fields');
+            const title = document.getElementById('modal-title');
+            
+            fields.innerHTML = '';
+            modal.classList.remove('hidden');
+            title.innerText = id ? 'Редактирование записи' : 'Добавление новой записи';
 
-        function openEditModal(data) {
-            editId = data.id;
-            document.getElementById('modal-title').innerText = "Редактировать #" + editId;
-            setupFields(data);
-            document.getElementById('modal').classList.replace('hidden', 'flex');
-        }
+            let item = {};
+            if (id) {
+                const res = await fetch(`${API}/${currentType}`);
+                const data = await res.json();
+                item = data.find(i => i.id == id);
+            }
 
-        function setupFields(data = {}) {
-            let fieldsHtml = '';
+            // Динамическая генерация полей с выборками (Select)
             if (currentType === 'doors') {
-                fieldsHtml = `
-                    <input id="f-name" value="${data.name || ''}" placeholder="Название" required>
-                    <select id="f-doortype">
-                        <option value="Скрытая" ${data.doorType === 'Скрытая' ? 'selected' : ''}>Скрытая</option>
-                        <option value="Межкомнатная" ${data.doorType === 'Межкомнатная' ? 'selected' : ''}>Межкомнатная</option>
-                        <option value="Входная" ${data.doorType === 'Входная' ? 'selected' : ''}>Входная</option>
+                fields.innerHTML = `
+                    <input id="f_name" value="${item.name || ''}" placeholder="Название" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    
+                    <label class="block text-xs font-bold text-gray-400 px-2">ТИП ДВЕРИ</label>
+                    <select id="f_doorType" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <option value="Скрытая" ${item.doorType === 'Скрытая' ? 'selected' : ''}>Скрытая</option>
+                        <option value="Классика" ${item.doorType === 'Классика' ? 'selected' : ''}>Классика</option>
+                        <option value="Раздвижная" ${item.doorType === 'Раздвижная' ? 'selected' : ''}>Раздвижная</option>
+                        <option value="Loft" ${item.doorType === 'Loft' ? 'selected' : ''}>Loft</option>
                     </select>
-                    <input id="f-price" type="number" value="${data.price || ''}" placeholder="Цена" required>
-                    <input id="f-material" value="${data.material || ''}" placeholder="URL картинки">
+
+                    <label class="block text-xs font-bold text-gray-400 px-2">МАТЕРИАЛ</label>
+                    <select id="f_material" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <option value="МДФ" ${item.material === 'МДФ' ? 'selected' : ''}>МДФ</option>
+                        <option value="Эмаль" ${item.material === 'Эмаль' ? 'selected' : ''}>Эмаль</option>
+                        <option value="Шпон" ${item.material === 'Шпон' ? 'selected' : ''}>Шпон</option>
+                        <option value="Массив" ${item.material === 'Массив' ? 'selected' : ''}>Массив</option>
+                    </select>
+
+                    <input id="f_price" value="${item.price || ''}" type="number" placeholder="Цена" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    <input id="f_image" value="${item.image || ''}" placeholder="Ссылка на картинку" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    <input id="f_storeId" value="${item.storeId || ''}" placeholder="ID магазина" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    <input id="f_storageId" value="${item.storageId || ''}" placeholder="ID склада" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                 `;
-            } else {
-                fieldsHtml = `<input id="f-name" value="${data.name || ''}" placeholder="Название" required>`;
+            } else if (currentType === 'orders') {
+                fields.innerHTML = `
+                    <label class="block text-xs font-bold text-gray-400 px-2">СТАТУС ЗАКАЗА</label>
+                    <select id="f_status" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <option value="Новый" ${item.status === 'Новый' ? 'selected' : ''}>Новый</option>
+                        <option value="Оплачен" ${item.status === 'Оплачен' ? 'selected' : ''}>Оплачен</option>
+                        <option value="В доставке" ${item.status === 'В доставке' ? 'selected' : ''}>В доставке</option>
+                        <option value="Доставлен" ${item.status === 'Доставлен' ? 'selected' : ''}>Доставлен</option>
+                    </select>
+                    <input id="f_comment" value="${item.comment || ''}" placeholder="Комментарий" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                `;
+            } else if (currentType === 'stores' || currentType === 'storages') {
+                fields.innerHTML = `
+                    <input id="f_name" value="${item.name || ''}" placeholder="Название" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    <input id="f_address" value="${item.address || ''}" placeholder="Адрес" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    <input id="f_image" value="${item.image || ''}" placeholder="Ссылка на фото" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                `;
             }
-            document.getElementById('modal-fields').innerHTML = fieldsHtml;
         }
 
-        document.getElementById('modal-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('modal-submit-btn');
-            submitBtn.disabled = true;
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
 
-            let body = { name: document.getElementById('f-name').value };
-            if (currentType === 'doors') {
-                body = { 
-                    ...body,
-                    doorType: document.getElementById('f-doortype').value,
-                    price: document.getElementById('f-price').value,
-                    material: document.getElementById('f-material').value,
-                    storeId: 1, storageId: 1 
-                };
-            }
+        // 4. Сохранение (POST или PUT)
+        async function save() {
+            const data = {};
+            const inputs = document.querySelectorAll('#modal-fields input, #modal-fields select');
+            
+            inputs.forEach(input => {
+                const key = input.id.replace('f_', '');
+                data[key] = input.value;
+            });
 
-            const method = editId ? 'PUT' : 'POST';
-            const url = editId ? `${API}/${currentType}/${editId}` : `${API}/${currentType}`;
+            const method = currentId ? 'PUT' : 'POST';
+            const url = currentId ? `${API}/${currentType}/${currentId}` : `${API}/${currentType}`;
 
             try {
                 const res = await fetch(url, {
-                    method: method,
+                    method,
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('token')}` // Добавлена авторизация
                     },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(data)
                 });
-
                 if (res.ok) {
                     closeModal();
-                    view(currentType);
+                    loadData(currentType);
                 } else {
-                    alert("Ошибка при сохранении");
+                    const err = await res.json();
+                    alert("Ошибка: " + (err.error || "не удалось сохранить"));
                 }
             } catch (e) {
-                alert("Ошибка сети");
-            } finally {
-                submitBtn.disabled = false;
+                alert("Ошибка соединения с сервером");
             }
-        };
+        }
 
-        function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
-
-        async function del(type, id) {
-            if(!confirm('Удалить?')) return;
-            await fetch(`${API}/${type}/${id}`, { 
-                method: 'DELETE', 
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
-            });
-            view(type);
+        // 5. Удаление
+        async function removeItem(id) {
+            if (confirm('Удалить эту запись безвозвратно?')) {
+                try {
+                    const res = await fetch(`${API}/${currentType}/${id}`, { 
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    if (res.ok) loadData(currentType);
+                } catch (e) {
+                    alert("Ошибка удаления");
+                }
+            }
         }
     </script>
 </body>

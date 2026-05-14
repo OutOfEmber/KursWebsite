@@ -6,40 +6,88 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h2 class="text-2xl font-bold mb-6 text-center">Авторизация</h2>
-        <div class="space-y-4">
-            <input type="email" id="email" placeholder="Email" class="w-full p-3 border rounded-xl">
-            <input type="password" id="pass" placeholder="Пароль" class="w-full p-3 border rounded-xl">
-            <input type="text" id="adminCode" placeholder="Код приглашения (необязательно)" class="w-full p-3 border rounded-xl">
-            <button onclick="auth('login')" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">Войти</button>
-            <button onclick="auth('register')" class="w-full border border-blue-600 text-blue-600 py-3 rounded-xl font-bold hover:bg-blue-50 transition">Зарегистрироваться</button>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-10 rounded-[2.5rem] shadow-xl w-full max-w-md border border-gray-100 relative">
+        <a href="index.html" class="absolute top-6 left-6 text-gray-400 hover:text-blue-600 transition flex items-center gap-2 text-sm font-medium">
+            ← <span class="hidden sm:inline">На главную</span>
+        </a>
+
+        <div class="text-center mb-10 mt-4">
+            <h1 class="text-3xl font-black text-slate-900 mb-2">Добро пожаловать</h1>
+            <p class="text-gray-400">Войдите в систему для управления заказами</p>
         </div>
-        <a href="index.html" class="block text-center mt-6 text-gray-400 text-sm hover:underline">На главную</a>
+
+        <div id="login-form" class="space-y-4">
+            <input type="email" id="email" placeholder="Email" class="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-500 transition">
+            <input type="password" id="password" placeholder="Пароль" class="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-500 transition">
+            
+            <div class="pt-2">
+                <p class="text-xs text-gray-400 mb-2 ml-1 uppercase font-bold tracking-widest">Код доступа (для админов)</p>
+                <input type="text" id="adminCode" placeholder="SECRET" class="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-500 transition">
+            </div>
+
+            <button onclick="auth('login')" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-100 transition-all duration-300">Войти</button>
+            <button onclick="auth('register')" class="w-full bg-gray-100 text-gray-600 py-5 rounded-2xl font-bold hover:bg-gray-200 transition">Создать аккаунт</button>
+        </div>
+
+        <div id="already-logged" class="hidden text-center py-6">
+            <p class="text-green-600 font-bold mb-4">Вы уже авторизованы!</p>
+            <button onclick="logout()" class="w-full bg-red-50 text-red-500 py-4 rounded-2xl font-bold hover:bg-red-100 transition">Выйти из аккаунта</button>
+        </div>
     </div>
-    <script src="auth-ui.js"></script>
+
     <script>
-        const API = "http://localhost:5000/api";
-        async function auth(type) {
-            const res = await fetch(`${API}/auth/${type}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('pass').value,
-                    adminCode: document.getElementById('adminCode').value,
-                    FIO: "Пользователь"
-                })
-            });
-            const data = await res.json();
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('role', data.role);
-                localStorage.setItem('fio', data.fio);
-                location.href = 'index.html';
-            } else { alert(data.error || 'Успешно'); }
+        const API = "http://localhost:5000/api/user";
+
+        // Проверка при загрузке: если вошел — скрываем форму
+        function checkStatus() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('already-logged').classList.remove('hidden');
+            }
         }
+
+        async function auth(type) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const adminCode = document.getElementById('adminCode').value;
+
+            if (!email || !password) return alert("Заполните поля!");
+
+            // Если ввели SECRET — ставим роль ADMIN, иначе USER
+            const role = adminCode === 'SECRET' ? 'ADMIN' : 'USER';
+            const url = type === 'login' ? `${API}/login` : `${API}/registration`;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('role', data.role); // Сервер вернет роль
+                    alert(type === 'login' ? "Успешный вход!" : "Регистрация завершена!");
+                    window.location.href = 'index.html';
+                } else {
+                    alert(data.error || "Ошибка доступа");
+                }
+            } catch (e) {
+                alert("Ошибка сервера. Убедитесь, что бэкенд запущен на порту 5000");
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.reload();
+        }
+
+        checkStatus();
     </script>
 </body>
 </html>

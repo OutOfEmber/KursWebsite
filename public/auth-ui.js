@@ -1,44 +1,44 @@
-// Функция для вставки общей шапки
-function injectHeader() {
+function syncAuthUI() {
+    const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
-    const fio = localStorage.getItem('fio');
-    const header = document.getElementById('header-placeholder') || document.querySelector('header');
     
-    if (!header) return;
+    // Находим кнопки (они должны иметь эти ID во всех HTML)
+    const admLink = document.getElementById('adm-link');
+    const loginLink = document.getElementById('login-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const cartCount = document.getElementById('cart-count');
 
-    header.className = "bg-white shadow-sm py-4 px-[5%] flex justify-between items-center sticky top-0 z-[100]";
-    header.innerHTML = `
-    <div class="logo font-bold text-2xl flex-shrink-0">INVISIBLE <span class="text-blue-600">LOFT</span></div>
-    <nav class="flex items-center justify-end gap-6 flex-1">
-        <a href="index.html" class="hover:text-blue-600">Главная</a>
-        <a href="catalog.html" class="hover:text-blue-600">Каталог</a>
-        <a href="stores.html" class="hover:text-blue-600">Магазины</a>
-        <a href="about.html" class="hover:text-blue-600">О нас</a>
-        <a href="cart.html" class="relative">🛒 <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1 absolute -top-2 -right-2">0</span></a>
+    // 1. Логика кнопок Вход / Выход / Админка
+    if (token) {
+        if (loginLink) loginLink.classList.add('hidden'); // Прячем "Вход"
+        if (logoutBtn) logoutBtn.classList.remove('hidden'); // Показываем "Выйти"
         
-        <div class="auth-btns ml-4 border-l pl-6 flex items-center gap-3">
-            ${fio ? `
-                <span class="text-sm font-bold text-slate-700 whitespace-nowrap">${fio}</span>
-                ${role === 'admin' ? '<a href="admin.html" class="text-blue-600 text-sm font-bold hover:underline">Админка</a>' : ''}
-                <button onclick="logout()" class="btn-outline btn-exit px-3 py-1 border border-red-200 text-red-500 rounded hover:bg-red-50 transition">Выйти</button>
-            ` : `
-                <button onclick="location.href='login.html'" class="btn-outline">Войти</button>
-            `}
-        </div>
-    </nav>
-`;
-    updateCartCount();
-}
+        // Показываем админку только если роль ADMIN
+        if (role && role.toUpperCase() === 'ADMIN') {
+            if (admLink) admLink.classList.remove('hidden');
+        } else {
+            if (admLink) admLink.classList.add('hidden');
+        }
+    } else {
+        if (loginLink) loginLink.classList.remove('hidden'); // Показываем "Вход"
+        if (logoutBtn) logoutBtn.classList.add('hidden');    // Прячем "Выйти"
+        if (admLink) admLink.classList.add('hidden');       // Прячем админку
+    }
 
-function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const el = document.getElementById('cart-count');
-    if (el) el.innerText = cart.length;
+    // 2. Обновляем счетчик корзины
+    if (cartCount) {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        cartCount.innerText = cart.length;
+    }
 }
 
 function logout() {
-    localStorage.clear();
-    location.href = 'index.html';
+    if (confirm('Выйти из профиля?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        window.location.href = 'index.html';
+    }
 }
 
-window.onload = injectHeader;
+// Запускаем при загрузке страницы
+document.addEventListener('DOMContentLoaded', syncAuthUI);
