@@ -13,13 +13,14 @@
     <header class="main-header">
         <div class="logo" onclick="location.href='index.html'">INVISIBLE <span>LOFT</span></div>
         <nav class="nav-menu">
-            <a href="index.html" class="nav-link">Главная</a>
-            <a href="catalog.html" class="nav-link active">Каталог</a>
+            <a href="index.html" class="nav-link active">Главная</a>
+            <a href="catalog.html" class="nav-link">Каталог</a>
             <a href="stores.html" class="nav-link">Магазины</a>
             <a href="about.html" class="nav-link">О нас</a>
             <a href="cart.html" class="nav-link relative">
                 🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span>
             </a>
+            <a href="orders.html" id="orders-link" class="nav-link" style="display:none">Мои заказы</a>
             <a href="admin.html" id="adm-link" class="nav-link admin hidden">Админка</a>
             <a href="login.html" id="login-link" class="nav-link">Вход</a>
             <a href="#" id="logout-btn" onclick="logout()" class="nav-link logout" style="display:none">Выйти</a>
@@ -79,10 +80,12 @@
             const loginLink = document.getElementById('login-link');
             const admLink = document.getElementById('adm-link');
             const logoutBtn = document.getElementById('logout-btn');
+            const ordersLink = document.getElementById('orders-link');
 
             if (role) {
                 if (loginLink) loginLink.style.display = 'none';
                 if (logoutBtn) logoutBtn.style.display = 'block';
+                if (ordersLink) ordersLink.style.display = 'block';
                 if (role === 'ADMIN' && admLink) {
                     admLink.classList.remove('hidden');
                     admLink.style.display = 'block';
@@ -95,14 +98,45 @@
         }
 
         async function loadDoors() {
-            try {
-                const res = await fetch(`${API_URL}/doors`);
-                allDoors = await res.json();
-                renderDoors(allDoors);
-            } catch (err) {
-                console.error("Ошибка загрузки:", err);
+    const container = document.getElementById('catalog-items');
+    
+    // 1. Получаем storeId из URL (если он есть)
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterStoreId = urlParams.get('storeId');
+
+    try {
+        const res = await fetch("http://localhost:5000/api/doors");
+        let doors = await res.json();
+
+        // 2. ГЛОБАЛЬНАЯ ФИЛЬТРАЦИЯ ПО МАГАЗИНУ
+        if (filterStoreId) {
+            // Оставляем только те двери, у которых storeId в базе совпадает с переданным
+            doors = doors.filter(door => String(door.storeId) === String(filterStoreId));
+            
+            // Меняем заголовок страницы, чтобы было понятно
+            const titleEl = document.querySelector('h1');
+            if (titleEl) titleEl.innerText = "Товары этого магазина";
+            
+            // Можно добавить кнопку "Показать всё"
+            const filterGrid = document.querySelector('.flex.flex-wrap'); // твой блок с фильтрами
+            if (filterGrid && !document.getElementById('reset-store-btn')) {
+                const resetBtn = document.createElement('button');
+                resetBtn.id = 'reset-store-btn';
+                resetBtn.className = "bg-red-50 text-red-500 px-6 py-4 rounded-2xl font-bold text-sm hover:bg-red-500 hover:text-white transition";
+                resetBtn.innerText = "✕ Сбросить магазин";
+                resetBtn.onclick = () => window.location.href = 'catalog.html';
+                filterGrid.appendChild(resetBtn);
             }
         }
+
+        allDoors = doors; // Сохраняем отфильтрованный список для работы других фильтров
+        renderDoors(allDoors);
+        
+    } catch (e) {
+        console.error("Ошибка:", e);
+        container.innerHTML = "<p class='text-center py-20 text-red-500 font-bold'>Ошибка связи с сервером</p>";
+    }
+}
 
         function renderDoors(doors) {
             const container = document.getElementById('doors-grid');

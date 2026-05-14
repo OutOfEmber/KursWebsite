@@ -1,31 +1,32 @@
 function syncAuthUI() {
-    const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId'); // Теперь ориентируемся на ID
     
-    // Находим кнопки (они должны иметь эти ID во всех HTML)
     const admLink = document.getElementById('adm-link');
+    const ordersLink = document.getElementById('orders-link');
     const loginLink = document.getElementById('login-link');
     const logoutBtn = document.getElementById('logout-btn');
     const cartCount = document.getElementById('cart-count');
 
-    // 1. Логика кнопок Вход / Выход / Админка
-    if (token) {
-        if (loginLink) loginLink.classList.add('hidden'); // Прячем "Вход"
-        if (logoutBtn) logoutBtn.classList.remove('hidden'); // Показываем "Выйти"
-        
-        // Показываем админку только если роль ADMIN
-        if (role && role.toUpperCase() === 'ADMIN') {
-            if (admLink) admLink.classList.remove('hidden');
-        } else {
-            if (admLink) admLink.classList.add('hidden');
+    if (userId) {
+        // Пользователь авторизован
+        if (loginLink) loginLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+        if (ordersLink) ordersLink.style.display = 'block';
+
+        // Админка только для ADMIN
+        if (role === 'ADMIN' && admLink) {
+            admLink.classList.remove('hidden');
+            admLink.style.display = 'block';
         }
     } else {
-        if (loginLink) loginLink.classList.remove('hidden'); // Показываем "Вход"
-        if (logoutBtn) logoutBtn.classList.add('hidden');    // Прячем "Выйти"
-        if (admLink) admLink.classList.add('hidden');       // Прячем админку
+        // Гость
+        if (loginLink) loginLink.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (ordersLink) ordersLink.style.display = 'none';
+        if (admLink) admLink.style.display = 'none';
     }
 
-    // 2. Обновляем счетчик корзины
     if (cartCount) {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         cartCount.innerText = cart.length;

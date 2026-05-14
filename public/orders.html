@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы | Invisible Loft</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+    <header class="main-header">
+        <div class="logo" onclick="location.href='index.html'">INVISIBLE <span>LOFT</span></div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link">Главная</a>
+            <a href="catalog.html" class="nav-link">Каталог</a>
+            <a href="orders.html" id="orders-link" class="nav-link active">Мои заказы</a>
+            <a href="cart.html" class="nav-link relative">
+                🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span>
+            </a>
+            <a href="admin.html" id="adm-link" class="nav-link admin hidden">Админка</a>
+            <a href="#" onclick="logout()" class="nav-link logout">Выйти</a>
+        </nav>
+    </header>
+
+    <main class="flex-grow max-w-5xl mx-auto w-full px-6 py-10">
+        <div class="bg-white rounded-[3rem] shadow-sm border p-8 md:p-12">
+            <h1 class="text-3xl font-black mb-2 text-slate-900">История заказов</h1>
+            <p id="user-display" class="text-gray-400 mb-10 text-sm italic">Проверка авторизации...</p>
+
+            <div id="orders-list" class="space-y-4">
+                <div class="text-center py-20 text-gray-300">Загрузка...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-12 mt-20">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="bg-slate-50 rounded-[2rem] p-8 text-center border border-dashed border-gray-200">
+                <h3 class="font-bold text-lg mb-2 text-slate-800">Нужна помощь с заказом?</h3>
+                <p class="text-gray-500 mb-6 text-sm">Если вы хотите изменить параметры или отменить заказ, свяжитесь с поддержкой.</p>
+                <div class="flex flex-col md:flex-row justify-center gap-4 md:gap-10 font-black text-xl">
+                    <a href="tel:+79991234567" class="text-blue-600 hover:scale-105 transition-transform">+7 (999) 123-45-67</a>
+                    <a href="#" class="text-slate-900">Telegram / WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    const API_URL = "http://localhost:5000/api";
+
+    async function loadMyOrders() {
+        const container = document.getElementById('orders-list');
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token');
+
+        // 1. Проверка авторизации
+        if (!token || !userId) {
+            container.innerHTML = `
+                <div class="text-center py-20">
+                    <p class="text-gray-400 mb-4">Вы не авторизованы</p>
+                    <a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold">Войти</a>
+                </div>`;
+            return;
+        }
+
+        try {
+            // 2. Запрос заказов
+            const res = await fetch(`${API_URL}/orders`);
+            if (!res.ok) throw new Error("Ошибка сервера");
+            
+            const allOrders = await res.json();
+
+            // 3. Фильтрация (сверяем ID пользователя)
+            const myOrders = allOrders.filter(order => String(order.userId) === String(userId));
+
+            if (myOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-20 bg-white rounded-[3rem] border border-dashed">
+                        <p class="text-gray-400 font-bold">У вас пока нет активных заказов</p>
+                        <a href="catalog.html" class="text-blue-600 underline font-black mt-2 inline-block">Перейти к покупкам</a>
+                    </div>`;
+                return;
+            }
+
+            // 4. Отрисовка
+            container.innerHTML = myOrders.reverse().map(order => `
+                <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm mb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Заказ #${order.id}</span>
+                            <h3 class="text-xl font-black text-slate-900 mt-2">${order.items}</h3>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-400 font-bold uppercase tracking-tighter">Статус</p>
+                            <p class="font-black text-orange-500">${order.status || 'В обработке'}</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-50 pt-4 flex justify-between items-center">
+                        <p class="text-gray-400 text-sm">Сумма заказа:</p>
+                        <p class="text-2xl font-black text-slate-900">${Number(order.totalPrice).toLocaleString()} ₽</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = `<p class="text-center py-20 text-red-500 font-bold">Ошибка загрузки заказов. Попробуйте позже.</p>`;
+        }
+    }
+
+    // Запуск при загрузке страницы
+    document.addEventListener('DOMContentLoaded', loadMyOrders);
+</script>
+</body>
+</html>

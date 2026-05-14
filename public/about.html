@@ -2,44 +2,117 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>О нас | Invisible Loft</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О компании | Invisible Loft</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
 
-    <header id="header-placeholder"></header>
+    <header class="main-header">
+        <div class="logo" onclick="location.href='index.html'">INVISIBLE <span>LOFT</span></div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link active">Главная</a>
+            <a href="catalog.html" class="nav-link">Каталог</a>
+            <a href="stores.html" class="nav-link">Магазины</a>
+            <a href="about.html" class="nav-link">О нас</a>
+            <a href="cart.html" class="nav-link relative">
+                🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span>
+            </a>
+            <a href="orders.html" id="orders-link" class="nav-link" style="display:none">Мои заказы</a>
+            <a href="admin.html" id="adm-link" class="nav-link admin hidden">Админка</a>
+            <a href="login.html" id="login-link" class="nav-link">Вход</a>
+            <a href="#" id="logout-btn" onclick="logout()" class="nav-link logout" style="display:none">Выйти</a>
+        </nav>
+    </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-10">
-        <a href="javascript:history.back()" class="back-btn">← Назад</a>
-        <div class="breadcrumbs">
-            <a href="index.html">Главная</a> / <span>О нас</span>
-        </div>
+    <nav class="breadcrumbs">
+        <a href="index.html">Главная</a>
+        <span>О компании</span>
+    </nav>
 
-        <div class="bg-white p-10 rounded-2xl shadow-sm border">
-            <h1 class="text-4xl font-black mb-6 text-slate-900">О компании Invisible Loft</h1>
-            <p class="text-gray-600 text-lg leading-relaxed mb-6">
-                Мы занимаемся производством и поставкой скрытых дверей (Invisible) и лофт-перегородок уже более 5 лет. 
-                Наш подход — это минимализм и функциональность. Мы верим, что дверь не должна загромождать пространство, 
-                она должна быть его частью.
-            </p>
-            <div class="grid grid-cols-3 gap-6 mt-10">
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-blue-600">5000+</div>
-                    <div class="text-sm text-gray-500">Установленных дверей</div>
+    <main class="max-w-5xl mx-auto px-6 py-10">
+        <div class="bg-white rounded-[3rem] shadow-sm border border-gray-100 p-10 md:p-16 text-center">
+            <h1 class="text-5xl font-black text-slate-900 mb-8">Больше, чем просто двери</h1>
+            
+            <div class="space-y-6 text-lg text-gray-500 leading-relaxed max-w-3xl mx-auto text-left">
+                <p>
+                    <span class="text-blue-600 font-bold">Invisible Loft</span> — это современное производство интерьерных решений, где эстетика минимализма встречается с высокими технологиями. Мы специализируемся на скрытых дверях (Invisible) и лофт-перегородках, которые не просто закрывают проемы, а меняют восприятие пространства.
+                </p>
+                <p>
+                    Наш путь начался с желания избавить интерьеры от лишнего визуального шума. Сегодня мы поставляем продукцию в десятки шоурумов по всей стране, сохраняя контроль качества на каждом этапе: от выбора шпона до финальной покраски эмалью.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+                <div class="p-8 bg-blue-50 rounded-[2.5rem]">
+                    <div class="text-3xl mb-4">🏆</div>
+                    <div class="font-black text-xl mb-2 text-slate-800">Качество</div>
+                    <p class="text-sm text-gray-500">Используем только влагостойкий МДФ и массив высшего сорта.</p>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-blue-600">12</div>
-                    <div class="text-sm text-gray-500">Магазинов по стране</div>
+                <div class="p-8 bg-slate-50 rounded-[2.5rem]">
+                    <div class="text-3xl mb-4">⚡</div>
+                    <div class="font-black text-xl mb-2 text-slate-800">Скорость</div>
+                    <p class="text-sm text-gray-500">Собственные склады позволяют отгружать заказы за 48 часов.</p>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-blue-600">10 лет</div>
-                    <div class="text-sm text-gray-500">Гарантии на короба</div>
+                <div class="p-8 bg-gray-900 text-white rounded-[2.5rem]">
+                    <div class="text-3xl mb-4">🎨</div>
+                    <div class="font-black text-xl mb-2">Дизайн</div>
+                    <p class="text-sm text-gray-400">Любые цвета по палитрам RAL и NCS для вашего проекта.</p>
                 </div>
+            </div>
+
+            <div class="mt-16 pt-10 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="text-left">
+                    <div class="text-gray-400 text-sm uppercase font-black tracking-widest">Связь с нами</div>
+                    <div class="text-2xl font-black">hello@invisible-loft.ru</div>
+                </div>
+                <a href="catalog.html" class="btn-buy !w-auto px-10">Посмотреть каталог</a>
             </div>
         </div>
     </main>
 
-    <script src="auth-ui.js"></script>
+    <script>
+        // --- СТАНДАРТНЫЕ ФУНКЦИИ (Копия из прошлых страниц для работы хедера) ---
+        function syncAuthUI() {
+            const role = localStorage.getItem('role');
+            const loginLink = document.getElementById('login-link');
+            const admLink = document.getElementById('adm-link');
+            const logoutBtn = document.getElementById('logout-btn');
+            const ordersLink = document.getElementById('orders-link');
+
+            if (role) {
+                if (loginLink) loginLink.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                if (ordersLink) ordersLink.style.display = 'block';
+                if (role === 'ADMIN' && admLink) {
+                    admLink.classList.remove('hidden');
+                    admLink.style.display = 'block';
+                }
+            } else {
+                if (loginLink) loginLink.style.display = 'block';
+                if (admLink) admLink.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+            }
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const countEl = document.getElementById('cart-count');
+            if (countEl) countEl.innerText = cart.length;
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncAuthUI();
+            updateCartCount();
+        });
+    </script>
+
 </body>
 </html>

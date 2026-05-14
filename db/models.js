@@ -3,14 +3,14 @@ const path = require('path');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    // Оставляем твой путь к базе
     storage: path.join(__dirname, 'db.sqlite') 
 });
 
 const User = sequelize.define('user', {
     email: { type: DataTypes.STRING, unique: true, allowNull: false },
     password: { type: DataTypes.STRING, allowNull: false },
-    role: { type: DataTypes.STRING, defaultValue: 'USER' }
+    role: { type: DataTypes.STRING, defaultValue: 'USER' },
+    fio: { type: DataTypes.STRING, allowNull: true }
 });
 
 const Door = sequelize.define('door', {
@@ -24,7 +24,7 @@ const Door = sequelize.define('door', {
 const Store = sequelize.define('store', {
     name: { type: DataTypes.STRING, allowNull: false },
     address: { type: DataTypes.STRING, defaultValue: "Адрес не указан" },
-    image: { type: DataTypes.STRING } // Добавляем картинку
+    image: { type: DataTypes.STRING }
 });
 
 const Storage = sequelize.define('storage', {
@@ -32,14 +32,23 @@ const Storage = sequelize.define('storage', {
 });
 
 const Order = sequelize.define('order', {
-    items: { type: DataTypes.TEXT, allowNull: false }, 
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    userId: { type: DataTypes.INTEGER, allowNull: true }, 
+    clientName: { type: DataTypes.STRING },
+    items: { type: DataTypes.STRING, allowNull: false },
     totalPrice: { type: DataTypes.INTEGER, allowNull: false },
-    comment: { type: DataTypes.STRING },
-    status: { type: DataTypes.STRING, defaultValue: 'Новый' }
+    status: { type: DataTypes.STRING, defaultValue: "Новый" }
 });
 
-Store.hasMany(Door);
-Door.belongsTo(Store);
+// --- ВСЕ СВЯЗИ ТУТ ---
+User.hasMany(Order, { foreignKey: 'userId' });
+Order.belongsTo(User, { foreignKey: 'userId' });
+
+// Один магазин может иметь много товаров
+Store.hasMany(Door, { foreignKey: 'storeId' });
+// Товар принадлежит конкретному магазину
+Door.belongsTo(Store, { foreignKey: 'storeId' });
+
 Storage.hasMany(Door);
 Door.belongsTo(Storage);
 

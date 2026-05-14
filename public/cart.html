@@ -2,107 +2,144 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Корзина | Invisible Loft</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-    <header class="bg-white border-b py-4 px-6 flex justify-between items-center sticky top-0 z-50">
-        <div class="font-black text-2xl tracking-tighter cursor-pointer" onclick="location.href='index.html'">
-            INVISIBLE <span class="text-blue-600">LOFT</span>
-        </div>
-        <nav class="flex items-center gap-6 font-medium text-sm">
-            <a href="index.html">Главная</a>
-            <a href="catalog.html">Каталог</a>
-            <a href="stores.html">Магазины</a>
-            <a href="cart.html" class="text-blue-600 relative">🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span></a>
-            <a href="admin.html" id="adm-link" class="hidden text-blue-600 font-bold border-l pl-6">Админка</a>
-            <a href="login.html" id="login-link" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl">Вход</a>
-            <button onclick="logout()" id="logout-btn" class="hidden text-red-500">Выйти</button>
+    <header class="main-header">
+        <div class="logo" onclick="location.href='index.html'">INVISIBLE <span>LOFT</span></div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link">Главная</a>
+            <a href="catalog.html" class="nav-link">Каталог</a>
+            <a href="stores.html" class="nav-link">Магазины</a>
+            <a href="about.html" class="nav-link">О нас</a>
+            <a href="orders.html" id="orders-link" class="nav-link" style="display: none;">Мои заказы</a>
+            <a href="admin.html" id="adm-link" class="nav-link text-red-500 hidden font-bold">Админка</a>
+            
+            <a href="cart.html" class="nav-link active relative">
+                🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-1 -right-2">0</span>
+            </a>
+            
+            <a href="login.html" id="login-link" class="nav-link">Вход</a>
+            <button onclick="logout()" id="logout-btn" class="nav-link" style="display: none; color: #ef4444;">Выйти</button>
         </nav>
     </header>
 
-    <main class="max-w-6xl mx-auto p-6 md:p-12">
-        <h1 class="text-4xl font-black mb-10">Корзина</h1>
+    <main class="flex-grow container mx-auto max-w-4xl p-6 md:p-12">
+        <h1 class="text-4xl font-black text-slate-900 mb-8 mt-10">Ваша корзина</h1>
+        
+        <div id="cart-items" class="space-y-4 mb-10">
+            </div>
 
-        <div class="cart-container">
-            <div id="cart-items">
-                </div>
-
-            <aside class="checkout-panel">
-                <h2 class="text-xl font-bold mb-6">Итого</h2>
-                <div class="flex justify-between mb-4 text-gray-500">
-                    <span>Товары (<span id="total-qty">0</span>)</span>
-                    <span id="subtotal">0 ₽</span>
-                </div>
-                <div class="border-t pt-4 mb-8">
-                    <div class="flex justify-between items-end">
-                        <span class="font-bold">К оплате</span>
-                        <span id="final-price" class="text-3xl font-black text-blue-600">0 ₽</span>
-                    </div>
-                </div>
-                <button onclick="checkout()" id="checkout-btn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg active:scale-95">
-                    Оформить заказ
-                </button>
-            </aside>
+        <div id="cart-summary" class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">Итого к оплате:</span>
+                <span id="final-price" class="text-3xl font-black text-slate-900">0 ₽</span>
+            </div>
+            <button id="checkout-btn" onclick="checkout()" 
+                    class="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-lg hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50">
+                Оформить заказ
+            </button>
         </div>
     </main>
 
-    <script src="auth-ui.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!localStorage.getItem('token')) {
-                alert("Пожалуйста, войдите в аккаунт");
-                window.location.href = 'login.html';
-                return;
-            }
-            renderCart();
-        });
+    <footer class="bg-white border-t border-gray-100 py-10 mt-auto">
+        <div class="container mx-auto px-6 text-center">
+            <div class="inline-block bg-blue-50 text-blue-600 px-6 py-2 rounded-xl mb-4 font-bold text-sm">
+                ℹ️ Информация
+            </div>
+            <p class="text-gray-500 max-w-xl mx-auto leading-relaxed text-sm">
+                После оформления заказа наша система зафиксирует вашу заявку. 
+                <span class="text-slate-900 font-bold">В течение 15-30 минут наш менеджер свяжется с вами</span> 
+                для подтверждения наличия на складе и уточнения деталей.
+            </p>
+        </div>
+    </footer>
 
-        function renderCart() {
-            const container = document.getElementById('cart-items');
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    <script>
+        const API_URL = "http://localhost:5000/api";
+
+        // 1. Синхронизация UI (Хедер как в index.html)
+        function syncAuthUI() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
             
-            // Синхронизация счетчиков
-            document.getElementById('cart-count').innerText = cart.length;
-            document.getElementById('total-qty').innerText = cart.length;
+            const ordersLink = document.getElementById('orders-link');
+            const admLink = document.getElementById('adm-link');
+            const loginLink = document.getElementById('login-link');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (token) {
+                if (loginLink) loginLink.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                if (ordersLink) ordersLink.style.display = 'block';
+                
+                if (role && role.toUpperCase() === 'ADMIN') {
+                    if (admLink) {
+                        admLink.classList.remove('hidden');
+                        admLink.style.display = 'block';
+                    }
+                }
+            } else {
+                if (loginLink) loginLink.style.display = 'block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (ordersLink) ordersLink.style.display = 'none';
+                if (admLink) admLink.style.display = 'none';
+            }
+        }
+
+        // 2. Отрисовка корзины с картинками
+        function renderCart() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const container = document.getElementById('cart-items');
+            const summary = document.getElementById('cart-summary');
+            const countEl = document.getElementById('cart-count');
+            
+            if (countEl) countEl.innerText = cart.length;
 
             if (cart.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white p-20 rounded-[32px] text-center border border-dashed">
-                        <p class="text-gray-400 mb-6">Корзина пуста</p>
-                        <a href="catalog.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold">В каталог</a>
-                    </div>`;
-                updateTotal(0);
+                    <div class="text-center py-20 bg-white rounded-[3rem] border border-dashed border-gray-200">
+                        <p class="text-gray-400 font-bold">Корзина пуста</p>
+                        <a href="catalog.html" class="text-blue-600 mt-4 inline-block font-black underline">Вернуться в каталог</a>
+                    </div>
+                `;
+                summary.classList.add('hidden');
                 return;
             }
 
+            summary.classList.remove('hidden');
             let total = 0;
+
             container.innerHTML = cart.map((item, index) => {
-                total += Number(item.price);
+                const price = Number(item.price) || 0;
+                total += price;
+                const imgUrl = item.image || 'https://via.placeholder.com/150?text=Door';
+
                 return `
-                <div class="cart-item">
-                    <img src="${item.image}" class="cart-item-img" onerror="this.src='https://via.placeholder.com/100'">
-                    <div class="cart-item-info">
-                        <div class="cart-item-title">${item.name}</div>
-                        <div class="cart-item-price">${Number(item.price).toLocaleString()} ₽</div>
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-6">
+                            <div class="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+                                <img src="${imgUrl}" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h3 class="font-black text-slate-900">${item.name}</h3>
+                                <p class="text-blue-600 font-bold">${price.toLocaleString()} ₽</p>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${index})" 
+                                class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition">
+                            ✕
+                        </button>
                     </div>
-                    <div class="cart-item-remove" onclick="removeFromCart(${index})">✕</div>
-                </div>`;
+                `;
             }).join('');
 
-            updateTotal(total);
-        }
-
-        function updateTotal(total) {
-            const priceStr = `${total.toLocaleString()} ₽`;
-            document.getElementById('subtotal').innerText = priceStr;
-            document.getElementById('final-price').innerText = priceStr;
-            
-            const btn = document.getElementById('checkout-btn');
-            btn.disabled = total === 0;
-            btn.style.opacity = total === 0 ? '0.5' : '1';
+            document.getElementById('final-price').innerText = total.toLocaleString() + " ₽";
         }
 
         function removeFromCart(index) {
@@ -110,18 +147,74 @@
             cart.splice(index, 1);
             localStorage.setItem('cart', JSON.stringify(cart));
             renderCart();
-            if(window.syncAuthUI) syncAuthUI(); // Обновить шапку
         }
 
         async function checkout() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            if(cart.length === 0) return;
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const userId = localStorage.getItem('userId');
+    const btn = document.getElementById('checkout-btn');
+
+    if (cart.length === 0) return;
+    
+    if (!userId || userId === 'undefined' || userId === 'null') {
+        alert("Пожалуйста, войдите в аккаунт для оформления заказа");
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 1. Блокируем кнопку, чтобы не было дублей
+    btn.disabled = true;
+    btn.innerText = "Оформляем...";
+
+    const orderData = {
+        userId: parseInt(userId),
+        clientName: localStorage.getItem('userEmail') || "Клиент",
+        items: cart.map(i => i.name).join(', '),
+        totalPrice: cart.reduce((sum, i) => sum + (Number(i.price) || 0), 0),
+        status: "Новый"
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        if (res.ok) {
+            // 2. ОЧИСТКА КОРЗИНЫ (самый важный момент)
+            localStorage.setItem('cart', '[]'); 
             
-            // Здесь логика отправки на сервер (как делали раньше)
-            alert("Заказ принят в обработку!");
-            localStorage.setItem('cart', '[]');
-            window.location.href = 'index.html';
+            // 3. Обновляем визуальный счетчик в хедере сразу
+            const countEl = document.getElementById('cart-count');
+            if (countEl) countEl.innerText = '0';
+
+            alert("Заказ принят! Менеджер скоро свяжется с вами.");
+            
+            // 4. Перенаправляем пользователя
+            window.location.href = 'orders.html';
+        } else {
+            const errData = await res.json();
+            alert("Ошибка при создании заказа: " + (errData.error || "неизвестная ошибка"));
+            btn.disabled = false;
+            btn.innerText = "Оформить заказ";
         }
+    } catch (e) {
+        console.error("Ошибка сети:", e);
+        alert("Нет связи с сервером. Попробуйте позже.");
+        btn.disabled = false;
+        btn.innerText = "Оформить заказ";
+    }
+}
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncAuthUI();
+            renderCart();
+        });
     </script>
 </body>
 </html>

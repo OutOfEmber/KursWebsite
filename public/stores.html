@@ -2,62 +2,140 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Наши магазины | Invisible Loft</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-    <header id="header-placeholder"></header>
+    <header class="main-header">
+        <div class="logo" onclick="location.href='index.html'">INVISIBLE <span>LOFT</span></div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link">Главная</a>
+            <a href="catalog.html" class="nav-link">Каталог</a>
+            <a href="stores.html" class="nav-link active">Магазины</a>
+            <a href="about.html" class="nav-link">О нас</a>
+            <a href="orders.html" id="orders-link" class="nav-link" style="display: none;">Мои заказы</a>
+            <a href="admin.html" id="adm-link" class="nav-link text-red-500 hidden font-bold">Админка</a>
+            
+            <a href="cart.html" class="nav-link relative">
+                🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-1 -right-2">0</span>
+            </a>
+            
+            <a href="login.html" id="login-link" class="nav-link">Вход</a>
+            <button onclick="logout()" id="logout-btn" class="nav-link" style="display: none; color: #ef4444;">Выйти</button>
+        </nav>
+    </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10">
-        
-        <div class="mb-8">
-            <a href="javascript:history.back()" class="back-btn">← Назад</a>
-            <div class="breadcrumbs mt-4">
-                <a href="index.html">Главная</a> / <span>Магазины</span>
-            </div>
+    <main class="flex-grow container mx-auto px-6 py-16">
+        <div class="text-center mb-16">
+            <h1 class="text-5xl font-black text-slate-900 mb-4">Наши шоурумы</h1>
+            <p class="text-gray-400 font-medium text-lg">Приходите в гости, чтобы оценить качество вживую</p>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm border p-8 md:p-12">
-            <h1 class="text-4xl font-black text-slate-900 mb-4">Наши шоурумы</h1>
-            <p class="text-gray-500 mb-10 text-lg">Здесь вы можете найти адреса наших филиалов и посмотреть доступный ассортимент.</p>
-
-            <div id="stores-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="animate-pulse flex space-x-4">
-                    <div class="flex-1 space-y-4 py-1">
-                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div class="space-y-2">
-                            <div class="h-4 bg-gray-200 rounded"></div>
-                            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
-                        </div>
-                    </div>
-                </div>
+        <div id="stores-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div class="col-span-full text-center py-20">
+                <p class="text-gray-400 animate-pulse font-bold">Загрузка списка магазинов...</p>
             </div>
         </div>
     </main>
 
-    <script src="auth-ui.js"></script>
+    <footer class="bg-white border-t border-gray-100 py-12">
+        <div class="container mx-auto px-6 text-center text-gray-400 text-sm font-medium">
+            &copy; 2026 Invisible Loft. Все права защищены.
+        </div>
+    </footer>
 
-  <script>
-    async function loadStores() {
-        const res = await fetch("http://localhost:5000/api/stores");
-        const stores = await res.json();
-        const container = document.getElementById('stores-container');
-        
-        container.innerHTML = stores.map(store => `
-            <div class="border rounded-2xl p-6 bg-white shadow-sm hover:shadow-md transition">
-                <img src="${store.image || 'https://via.placeholder.com/400x200'}" class="w-full h-40 object-cover rounded-xl mb-4">
-                <h3 class="text-xl font-bold mb-2">${store.name}</h3>
-                <p class="text-gray-500 text-sm mb-4">${store.address || 'Адрес уточняется'}</p>
-                <a href="catalog.html" class="text-blue-600 font-bold">Перейти в каталог →</a>
-            </div>
-        `).join('');
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-        syncAuthUI();
-        loadStores();
-    });
-</script>
+    <script>
+        const API_URL = "http://localhost:5000/api";
+
+        async function loadStores() {
+            const container = document.getElementById('stores-list');
+            
+            try {
+                // Добавляем timestamp к URL, чтобы браузер не брал данные из кэша
+                const res = await fetch(`${API_URL}/stores?t=${Date.now()}`);
+                
+                if (!res.ok) throw new Error("Сервер вернул ошибку " + res.status);
+                
+                const stores = await res.json();
+                console.log("Магазины получены:", stores);
+
+                if (!Array.isArray(stores) || stores.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-20 bg-white rounded-[3rem] border border-dashed">
+                            <p class="text-gray-400 font-bold text-xl">Магазины пока не добавлены 📍</p>
+                            <p class="text-gray-300 mt-2">Попробуйте обновить страницу или добавить их в админке.</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = stores.map(store => `
+                    <div class="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all group">
+                        <div class="w-full h-56 bg-gray-50 rounded-[2.5rem] mb-6 overflow-hidden">
+                            <img src="${store.image || 'https://vladivostok.unidoors.ru/upload/iblock/831/831a29f86014468f3a3f126f582f347e.jpg'}" 
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                 onerror="this.src='https://via.placeholder.com/600x400?text=Invisible+Loft'">
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-900 mb-2">${store.name}</h3>
+                        <p class="text-gray-400 font-medium mb-8 flex items-center gap-2">
+                            <span class="text-blue-600 text-xl">📍</span> ${store.address || 'Адрес уточняется'}
+                        </p>
+                        <button onclick="location.href='catalog.html?storeId=${store.id}'" 
+                                class="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-200">
+                            Посмотреть ассортимент
+                        </button>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                console.error("Ошибка загрузки:", e);
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-20 bg-red-50 rounded-[3rem] border border-red-100">
+                        <p class="text-red-500 font-bold text-xl">Ошибка соединения с сервером</p>
+                        <p class="text-red-400 mt-2 text-sm">Проверьте, запущен ли backend на порту 5000</p>
+                    </div>`;
+            }
+        }
+
+        // Синхронизация хедера (Авторизация)
+        function syncAuth() {
+            const role = localStorage.getItem('role');
+            const ordersLink = document.getElementById('orders-link');
+            const admLink = document.getElementById('adm-link');
+            const loginLink = document.getElementById('login-link');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (role) {
+                if (loginLink) loginLink.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                if (ordersLink) ordersLink.style.display = 'block';
+                
+                if (role.toUpperCase() === 'ADMIN' && admLink) {
+                    admLink.classList.remove('hidden');
+                    admLink.style.display = 'block';
+                }
+            }
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const countEl = document.getElementById('cart-count');
+            if (countEl) countEl.innerText = cart.length;
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncAuth();
+            updateCartCount();
+            loadStores();
+        });
+    </script>
 </body>
 </html>

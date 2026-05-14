@@ -20,6 +20,7 @@
             <a href="cart.html" class="nav-link relative">
                 🛒 Корзина <span id="cart-count" class="bg-red-500 text-white text-[10px] rounded-full px-1.5 absolute -top-2 -right-3">0</span>
             </a>
+            <a href="orders.html" id="orders-link" class="nav-link" style="display:none">Мои заказы</a>
             <a href="admin.html" id="adm-link" class="nav-link admin hidden">Админка</a>
             <a href="login.html" id="login-link" class="nav-link">Вход</a>
             <a href="#" id="logout-btn" onclick="logout()" class="nav-link logout" style="display:none">Выйти</a>
@@ -35,7 +36,6 @@
         <p class="hero-subtitle">Премиальные решения для вашего интерьера с доставкой напрямую.</p>
         <a href="catalog.html" class="btn-hero">Перейти в каталог</a>
     </main>
-
     <script>
         // --- ФУНКЦИЯ СИНХРОНИЗАЦИИ UI (Копия из catalog.html) ---
         function syncAuthUI() {
@@ -43,10 +43,12 @@
             const loginLink = document.getElementById('login-link');
             const admLink = document.getElementById('adm-link');
             const logoutBtn = document.getElementById('logout-btn');
+            const ordersLink = document.getElementById('orders-link');
 
             if (role) {
                 if (loginLink) loginLink.style.display = 'none';
                 if (logoutBtn) logoutBtn.style.display = 'block';
+                if (ordersLink) ordersLink.style.display = 'block';
                 
                 if (role === 'ADMIN' && admLink) {
                     admLink.classList.remove('hidden');
