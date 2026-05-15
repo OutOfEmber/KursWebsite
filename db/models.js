@@ -49,7 +49,7 @@ Store.hasMany(Door, { foreignKey: 'storeId' });
 // Товар принадлежит конкретному магазину
 Door.belongsTo(Store, { foreignKey: 'storeId' });
 
-Storage.hasMany(Door);
-Door.belongsTo(Storage);
+Storage.hasMany(Door, { foreignKey: 'storageId' });
+Door.belongsTo(Storage, { foreignKey: 'storageId' });
 
 module.exports = { sequelize, User, Door, Store, Storage, Order };
