@@ -5,6 +5,17 @@
     <title>Админ-панель | Invisible Loft</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    (function() {
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('role');
+
+        if (!token || userRole !== 'ADMIN') {
+            alert('Доступ запрещен. Данная страница предназначена только для администраторов компании.');
+            window.location.href = 'login.html';
+        }
+    })();
+</script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="flex">
